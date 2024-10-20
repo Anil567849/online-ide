@@ -5,6 +5,11 @@ interface IProps {
     path: any;
 }
 
+interface IFileTree {
+    tree: any;
+    onSelect: any;
+}
+
 const FileTreeNode = ({ fileName, nodes, onSelect, path }: IProps) => {
     const isDir = !!nodes;
     return (
@@ -35,12 +40,8 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path }: IProps) => {
     );
 };
 
-interface IFileTree {
-    tree: any;
-    onSelect: any;
-}
-
 const FileTree = ({ tree, onSelect }: IFileTree) => {
     return <FileTreeNode onSelect={onSelect} fileName="/" path="" nodes={tree} />;
 };
+
 export default FileTree;

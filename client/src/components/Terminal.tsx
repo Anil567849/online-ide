@@ -22,12 +22,10 @@ const Terminal = () => {
     isRendered.current = true;
 
     const term = new XTerminal({
-      rows: 5,
+      rows: 10,
     });
 
     if(!terminalRef.current) return;
-
-    console.log(terminalRef.current);
     
     term.open(terminalRef.current);
 

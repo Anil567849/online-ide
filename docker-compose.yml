@@ -1,0 +1,11 @@
+name: 'online-ide'
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: ./server/Dockerfile
+    command:
+      npm run start
+    ports:
+      - "8000:8000"

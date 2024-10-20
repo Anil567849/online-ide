@@ -18,9 +18,10 @@ RUN apt-get install -y nodejs
 
 WORKDIR /home/app
 
+RUN mkdir user
+
 COPY package*.json ./
 COPY tsconfig.json ./
-COPY user ./user
 
 # Install dependencies
 RUN npm install --save-dev @types/node

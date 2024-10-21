@@ -9,6 +9,7 @@ import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { createPath } from "../../utils/home";
 import { getFileExtension } from "../../utils/getFileExtension";
+import "ace-builds/src-noconflict/theme-monokai";
 
 function App() {
   const [fileTree, setFileTree] = useState({});
@@ -33,7 +34,7 @@ function App() {
   }, [code, selectedFile, isSaved]);
 
   useEffect(() => {
-      setIsSaved(selectedFileContent === code);
+    setIsSaved(selectedFileContent === code);
   }, [code]);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ function App() {
   }, [selectedFileContent]);
 
   const getFileTree = async () => {
-    const response = await fetch("http://localhost:8000/files");
+    const response = await fetch("http://localhost:9001/files");
     if (!response.ok) return;
     const result = await response.json();
     setFileTree(result.tree);
@@ -54,7 +55,7 @@ function App() {
   const getFileContents = useCallback(async () => {
     if (!selectedFile) return;
     const response = await fetch(
-      `http://localhost:8000/files/content?path=${selectedFile}`
+      `http://localhost:9001/files/content?path=${selectedFile}`
     );
     if (!response.ok) return;
     const result = await response.json();
@@ -76,23 +77,25 @@ function App() {
     <div className="playground-container">
       <div className="editor-container">
         <div className="files">
-          {selectedFile && (
-            <>
-              <p>
-                <span className="file-name-header">root {createPath(selectedFile)}{" "}</span>
+          <div className="current-file-header-container">
+            {selectedFile && (
+              <>
+              <p className="saved-badge" style={{ backgroundColor: isSaved ? "green" : "red" }}>{isSaved ? "Saved" : "Unsaved"}
               </p>
-              <p>
-                <span style={{ backgroundColor: isSaved ? "green" : "red", padding: '10px', borderRadius: '5rem', marginTop: "100px" }}>{isSaved ? "Saved" : "Unsaved"}</span>
-              </p>
-            </>
-          )}
-          <FileTree
-            onSelect={(path: string) => {
-              setSelectedFileContent("");
-              setSelectedFile(path);
-            }}
-            tree={fileTree}
-          />
+                <p className="file-name-header">root {createPath(selectedFile)}{" "}
+                </p>
+              </>
+            )}
+          </div>
+          <div className="folder-container">
+            <FileTree
+              onSelect={(path: string) => {
+                setSelectedFileContent("");
+                setSelectedFile(path);
+              }}
+              tree={fileTree}
+            />
+          </div>
         </div>
         <div className="editor">
           {
@@ -102,20 +105,20 @@ function App() {
               mode={getFileExtension(selectedFile)}
               value={code}
               onChange={(e) => setCode(e)}
+              theme="monokai"
             /> : <AceEditor
               width="100%"
               height="100%"
               value="Select a file to write"
               fontSize="2.5rem"
               readOnly={true}
-
             />
 
           }
         </div>
       </div>
       <div className="terminal-container">
-        <p style={{color: 'white', margin: "0"}}>Terminal</p>
+        <p style={{ color: 'white', margin: "0" }}>Terminal</p>
         <Terminal />
       </div>
     </div>

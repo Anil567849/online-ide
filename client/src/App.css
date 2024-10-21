@@ -1,9 +1,0 @@
-*{
-  box-sizing: border-box;
-}
-*::-webkit-scrollbar{
-  width: 1px;
-}
-body{
-  overflow: hidden;
-}

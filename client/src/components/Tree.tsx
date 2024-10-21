@@ -13,17 +13,21 @@ interface IFileTree {
 const FileTreeNode = ({ fileName, nodes, onSelect, path }: IProps) => {
     const isDir = !!nodes;
     return (
-        <div
-            onClick={(e) => {
-                e.stopPropagation();
-                if (isDir) return;
-                onSelect(path);
-            }}
+        <div onClick={(e) => {
+            e.stopPropagation();
+            if (isDir) return;
+            onSelect(path);
+        }}
             style={{ height: '100%', width: '100%' }}
         >
-            <p style={{margin: "2px 0"}} className={isDir ? "" : "file-node"}>{fileName}</p>
+            <p 
+            style={{ margin: "2px 0" }} 
+            className={isDir ? "" : "file-node"}>
+                {isDir ? "📁": "🗊"} {fileName}
+            </p>
+
             {nodes && fileName !== "node_modules" && (
-                <ul style={{paddingLeft: '10px'}}>
+                <ul style={{ paddingLeft: '10px' }}>
                     {Object.keys(nodes).map((child) => (
                         <li key={child}>
                             <FileTreeNode

@@ -15,7 +15,7 @@
 // }
 
 
-export async function spinAContainer(){
+export async function spinAContainer(): Promise<{ containerIP: string }>{
     
 //     const command = new RunTaskCommand({
 //         cluster: config.CLUSTER,
@@ -41,4 +41,8 @@ export async function spinAContainer(){
 //     })
 
 //     await ecsClient.send(command);
+
+    return new Promise((resolve, reject) => {
+        resolve({containerIP: '172.17.0.2'})
+    })
 }

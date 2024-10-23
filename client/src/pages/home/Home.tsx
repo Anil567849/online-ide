@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import "./home.css";
 import Terminal from "../../components/Terminal";
 import FileTree from "../../components/Tree";
-import socket from "../../socket";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-github";
@@ -10,6 +9,10 @@ import "ace-builds/src-noconflict/ext-language_tools";
 import { createPath } from "../../utils/home";
 import { getFileExtension } from "../../utils/getFileExtension";
 import "ace-builds/src-noconflict/theme-monokai";
+import { useParams } from "react-router-dom";
+import initSocket from "../../socket";
+import { Socket } from "socket.io-client";
+let socket: Socket | null = null;
 
 function App() {
   const [fileTree, setFileTree] = useState({});
@@ -17,12 +20,19 @@ function App() {
   const [selectedFileContent, setSelectedFileContent] = useState("");
   const [code, setCode] = useState("");
   const [isSaved, setIsSaved] = useState<boolean>(true);
+  const { ideId } = useParams();
+
+  useEffect(() => {
+    if (!ideId) return;
+    const _socket = initSocket(ideId);
+    socket = _socket;
+  }, [ideId])
 
   useEffect(() => {
     if (!isSaved && code) {
       const timer = setTimeout(() => {
         setIsSaved(true);
-        socket.emit("file:change", {
+        socket?.emit("file:change", {
           path: selectedFile,
           content: code,
         });
@@ -35,6 +45,7 @@ function App() {
 
   useEffect(() => {
     setIsSaved(selectedFileContent === code);
+    getFileTree();
   }, [code]);
 
   useEffect(() => {
@@ -46,7 +57,12 @@ function App() {
   }, [selectedFileContent]);
 
   const getFileTree = async () => {
-    const response = await fetch("http://localhost:9001/files");
+    if (!ideId) return;
+    const response = await fetch("http://localhost:9001/files", {
+      headers: {
+        'x-ide-id': ideId
+      }
+    });
     if (!response.ok) return;
     const result = await response.json();
     setFileTree(result.tree);
@@ -67,9 +83,9 @@ function App() {
   }, [getFileContents, selectedFile]);
 
   useEffect(() => {
-    socket.on("file:refresh", getFileTree);
+    socket?.on("file:refresh", getFileTree);
     return () => {
-      socket.off("file:refresh", getFileTree);
+      socket?.off("file:refresh", getFileTree);
     };
   }, []);
 
@@ -80,8 +96,8 @@ function App() {
           <div className="current-file-header-container">
             {selectedFile && (
               <>
-              <p className="saved-badge" style={{ backgroundColor: isSaved ? "green" : "red" }}>{isSaved ? "Saved" : "Unsaved"}
-              </p>
+                <p className="saved-badge" style={{ backgroundColor: isSaved ? "green" : "red" }}>{isSaved ? "Saved" : "Unsaved"}
+                </p>
                 <p className="file-name-header">root {createPath(selectedFile)}{" "}
                 </p>
               </>
@@ -119,7 +135,7 @@ function App() {
       </div>
       <div className="terminal-container">
         <p style={{ color: 'white', margin: "0" }}>Terminal</p>
-        <Terminal />
+        {socket && <Terminal socket={socket}/>}
       </div>
     </div>
   );

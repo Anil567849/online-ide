@@ -13,9 +13,11 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.1",
-    "http-proxy": "^1.18.1"
+    "http-proxy": "^1.18.1",
+    "ioredis": "^5.4.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/http-proxy": "^1.17.15"
   }

@@ -44,6 +44,4 @@ export function initSocket() {
             ptyProcess.write(data);
         })
     })
-
-
 }

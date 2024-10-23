@@ -7,7 +7,7 @@ function App() {
   return (
       <Routes>
         <Route path="/" element={<IDE />}/>
-        <Route path="/ide/:subdomain" element={<Home />}/>
+        <Route path="/ide/:ideId" element={<Home />}/>
       </Routes>
   );
 }

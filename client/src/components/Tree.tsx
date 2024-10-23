@@ -23,7 +23,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path }: IProps) => {
             <p 
             style={{ margin: "2px 0" }} 
             className={isDir ? "" : "file-node"}>
-                {isDir ? "📁": "🗊"} {fileName}
+                {!isDir ? "🗊": "📁"} {fileName}
             </p>
 
             {nodes && fileName !== "node_modules" && (

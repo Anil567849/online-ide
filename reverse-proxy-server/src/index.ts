@@ -10,71 +10,59 @@ const server = http.createServer(app);
 
 const proxyServer = httpProxy.createServer();
 
-// const corsOptions = {
-//     origin: "http://localhost:5173",
-//     allowedHeaders: ["x-ide-id", "Content-Type"],
-// };
+const corsOptions = {
+    origin: "http://localhost:5173",
+    allowedHeaders: ["x-ide-id", "Content-Type"],
+};
 
-// app.use(cors(corsOptions))
+app.use(cors(corsOptions))
+
+let containerIP: string | null = "";
 
 // WebSockets start as an HTTP request and then "upgrade" the connection from HTTP to a WebSocket. The
 server.on("upgrade", async (req, socket, head) => {
     const hostname = req.headers.host;
-    // console.log('REQ URL::::', req.url);
-    
-    // if (!req.url) return;
-
-    // Parse the URL to get query parameters
-    // const url = new URL(req.url, `http://${hostname}`);
-    // const ideId = url.searchParams.get('x-ide-id');
-    // console.log("IDE ID::::", ideId);
-    
 
     if (!hostname) {
         socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
         socket.destroy();
         return;
     }
-    // try {
-        // const containerIP = await redis.get(ideId);
-        const containerIP = '172.17.0.3'
 
+    try {
         const { ipAddress, defaultPort } = { ipAddress: containerIP, defaultPort: 8000 }
         const reverseProxyUrl = `http://${ipAddress}:${defaultPort}`;
 
         console.log(`Forwarding to ws proxy: ${reverseProxyUrl}`);
 
         return proxyServer.ws(req, socket, head, { target: reverseProxyUrl, ws: true });
-    // } catch (error) {
-    //     console.log("Error: middleware", error);
-    //     return;
-    // }
+    } catch (error) {
+        socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
+        socket.destroy();
+        return;
+    }
 });
 
 app.use(async (req: Request, res: Response) => {
+    // const requestingToURL = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+    // console.log("requestingToURL::::", requestingToURL);
 
-    // const ideId = req.get('x-ide-id'); // or req.headers['x-ide-id']
-    // if (!ideId) {
-    //     res.send({ error: "ideId is required" });
-    //     return;
-    // }
+    const ideId = req.get('x-ide-id'); // or req.headers['x-ide-id']
 
     try {
-        // const containerIP = await redis.get(ideId);
-        const containerIP ='172.17.0.3';
-        const requestingToURL = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-        console.log("requestingToURL::::", requestingToURL);
+        if(ideId){
+            containerIP = await redis.get(ideId);
+        }       
 
         const { ipAddress, defaultPort } = { ipAddress: containerIP, defaultPort: 8000 }
         const reverseProxyUrl = `http://${ipAddress}:${defaultPort}`;
 
-        console.log(`Forwarding to proxy 1: ${reverseProxyUrl}`);
+        console.log(`Forwarding to proxy: ${reverseProxyUrl}`);
         return proxyServer.web(req, res, { target: reverseProxyUrl, changeOrigin: true, ws: true });
     } catch (error) {
-        console.log("Error: middleware", error);
+        res.status(500).json({ error: 'Internal server error' });
         return;
     }
-
 })
 
 proxyServer.on("error", (err, req, res) => {
